@@ -4,9 +4,11 @@ import android.graphics.PointF;
 import android.graphics.drawable.shapes.Shape;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -34,8 +36,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     MapFragment mapFragment; //네이버지도가 들어가게 될 객체
     MainButtonFragment mainButtonFragment; //네이버지도에서 동작하는 버튼의 프래그먼트 객체
     MarkerButtonFragment MBF;
+    MenuFragment MF;
+
+
+
+
     //사용한 버튼
     Button buttonAddMarker; //누른 위치에 마커를 추가하는 버튼
+    Button menuButton;
     LinearLayout LL;
 
     //마커관련
@@ -47,7 +55,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     String lng;
 
     NaverMap NM;
-    boolean isMarkerClicked = false;
 
 
     @Override
@@ -58,6 +65,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         InitNaverMap(savedInstanceState); //기초 화면이 되는 naverMap(프래그먼트)에 네이버지도를 넣음
 
         addFragment(mainButtonFragment.newinstance()); //mainButtonFragment를 지도 위에 덮어써줌
+        addFragment(MF.newInstance());
+
     }
 //=============================================================================================
     //네이버지도객체를 초기화시켜줌
@@ -89,13 +98,52 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     //네이버지도 객체가 실행될 때 실행
     public void onMapReady(@NonNull final NaverMap naverMap) {
+
         SetOnMapClickListener(naverMap);
 
         SetButtonAddMarkerListener();
 
-        addFragment(MBF.newInstance());
+        SetButtonMenuListener();
 
-        SetMarkerButtonListener();//미구현
+
+        SetMarkerButtonListener();
+    }
+
+    public void SetButtonMenuListener(){
+
+        menuButton =(Button)findViewById(R.id.menu);
+
+        menuButton.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                PopupMenu popup= new PopupMenu(getApplicationContext(), v);//v는 클릭된 뷰를 의미
+                getMenuInflater().inflate(R.menu.marker_menu, popup.getMenu());
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()){
+                            case R.id.item1:
+                                Toast.makeText(getApplication(),"메뉴1",Toast.LENGTH_SHORT).show();
+                                break;
+                            case R.id.item2:
+                                Toast.makeText(getApplication(),"메뉴2",Toast.LENGTH_SHORT).show();
+                                break;
+                            case R.id.item3:
+                                Toast.makeText(getApplication(),"메뉴3",Toast.LENGTH_SHORT).show();
+                                break;
+                            default:
+                                break;
+                        }
+                        return false;
+                    }
+                });
+
+
+                출처: https://survivalking.tistory.com/25 [생존몬의 프로그래밍 블로그]
+                popup.show();
+            }
+        });
+
     }
 //=============================================================================================
 //지도 클릭 리스너 정의부분
@@ -106,9 +154,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             //지도 클릭 이벤트 리스너 정의
             public void onMapClick(@NonNull PointF pointF, @NonNull LatLng latLng) {
                 SetMarkerPosition(latLng);
-                SetInfoWindow();
+
                 marker.setMap(naverMap);
-                infoWindow.open(marker);
+
 
                 LL = (LinearLayout)findViewById(R.id.LinearMarkerButton);
             }
@@ -123,29 +171,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
 
                 SetMarkerOnClickListener();
+
                 marker.setIcon(MarkerIcons.RED);
 
-//                size: new naver.maps.Size(22, 35),
-//                        origin: new naver.maps.Point(0, 0),
-//                        anchor: new naver.maps.Point(11, 35)
+                infoWindow = new InfoWindow();
+                SetInfoWindow();
+                infoWindow.open(marker);
 
-                //marker.setClickable(true);
                 marker=new Marker(marker.getPosition()); //클릭 시 앞서 받은 포지션에 마커를 추가
-                Log.i("Test",Float.toString(marker.getAlpha())+","+Float.toString(marker.getAnchor().x)+","+Float.toString(marker.getAnchor().y)); //확인을 위한 로그표시
-
-
-//                PopupMenu p=new PopupMenu(getApplicationContext(),v);
-//                getMenuInflater().inflate(R.menu.marker_menu,p.getMenu());
-//                p.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-//
-//                    @Override
-//                    public boolean onMenuItemClick(MenuItem item) {
-//                        Toast.makeText(getApplicationContext(),"팝업버튼",Toast.LENGTH_LONG).show();
-//                        return false;
-//                    }
-//                });
-//                p.show();
-
             }
         });
     }

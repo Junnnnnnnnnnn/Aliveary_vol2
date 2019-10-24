@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 public class MainButtonFragment extends Fragment{
-    Button buttonAddMarker;
     public static MainButtonFragment newinstance(){
         return new MainButtonFragment();
     }
