@@ -1,13 +1,12 @@
 package com.example.navermappractice;
 
 import android.graphics.PointF;
+import android.graphics.drawable.shapes.Shape;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,7 +21,10 @@ import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
 import com.naver.maps.map.overlay.InfoWindow;
 import com.naver.maps.map.overlay.Marker;
-import com.naver.maps.map.overlay.Overlay;;
+
+import com.naver.maps.map.overlay.Overlay;
+import com.naver.maps.map.util.MarkerIcons;
+
 
 //OnMapReadyCallback <- Naver 객체 사용 위해 상속(implements)
 //implements는 메서드를 재정의 해야함으로 onMapReady를 Override함
@@ -44,7 +46,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     String lat;
     String lng;
 
-    //MainActivity생성 시 실행되는코드
+    NaverMap NM;
+    boolean isMarkerClicked = false;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,13 +93,85 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         SetButtonAddMarkerListener();
 
-        SetMarkerOnClickListener();
-
         addFragment(MBF.newInstance());
 
-        SetMarkerButtonListener();
+        SetMarkerButtonListener();//미구현
     }
 //=============================================================================================
+//지도 클릭 리스너 정의부분
+    public void SetOnMapClickListener(@NonNull final NaverMap naverMap){
+        NM=naverMap;
+        naverMap.setOnMapClickListener(new NaverMap.OnMapClickListener() {
+            @Override
+            //지도 클릭 이벤트 리스너 정의
+            public void onMapClick(@NonNull PointF pointF, @NonNull LatLng latLng) {
+                SetMarkerPosition(latLng);
+                SetInfoWindow();
+                marker.setMap(naverMap);
+                infoWindow.open(marker);
+
+                LL = (LinearLayout)findViewById(R.id.LinearMarkerButton);
+            }
+        });
+    }
+
+    //buttonAddMarker 버튼 (마커 추가버튼) 리스너 정의
+    public void SetButtonAddMarkerListener(){
+        buttonAddMarker = (Button)findViewById(R.id.buttonAddMarker);
+        buttonAddMarker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                SetMarkerOnClickListener();
+                marker.setIcon(MarkerIcons.RED);
+
+//                size: new naver.maps.Size(22, 35),
+//                        origin: new naver.maps.Point(0, 0),
+//                        anchor: new naver.maps.Point(11, 35)
+
+                //marker.setClickable(true);
+                marker=new Marker(marker.getPosition()); //클릭 시 앞서 받은 포지션에 마커를 추가
+                Log.i("Test",Float.toString(marker.getAlpha())+","+Float.toString(marker.getAnchor().x)+","+Float.toString(marker.getAnchor().y)); //확인을 위한 로그표시
+
+
+//                PopupMenu p=new PopupMenu(getApplicationContext(),v);
+//                getMenuInflater().inflate(R.menu.marker_menu,p.getMenu());
+//                p.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+//
+//                    @Override
+//                    public boolean onMenuItemClick(MenuItem item) {
+//                        Toast.makeText(getApplicationContext(),"팝업버튼",Toast.LENGTH_LONG).show();
+//                        return false;
+//                    }
+//                });
+//                p.show();
+
+            }
+        });
+    }
+
+    //마커 클릭 리스너 정의  (추가할거 많음) 미완
+    public void SetMarkerOnClickListener(){
+        marker.setOnClickListener(new Overlay.OnClickListener() {
+            @Override
+            public boolean onClick(@NonNull Overlay overlay) { // 버튼클릭하여 저장된 마커의 클릭리스너
+                Log.i("test","MakerClick");
+                Toast.makeText(getApplicationContext(),"클릭되었습니다!!",Toast.LENGTH_LONG).show();
+
+                LL = (LinearLayout)findViewById(R.id.LinearMarkerButton);
+                if(LL.getVisibility()==LL.VISIBLE){
+                    LL.setVisibility(LL.INVISIBLE);
+                }
+                else{
+                    LL.setVisibility(LL.VISIBLE);
+                }
+
+                return true;
+            }
+        });
+    }
+
+
     //마커 정보창에 대한 함수(미완성)
     public void SetInfoWindow(){
         infoWindow.setAdapter(new InfoWindow.DefaultTextAdapter(mapFragment.getActivity()){
@@ -123,73 +200,4 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         marker.setPosition(new LatLng(dLat, dLng));
     }
 
-    //지도 클릭 리스너 정의부분
-    public void SetOnMapClickListener(@NonNull final NaverMap naverMap){
-
-        naverMap.setOnMapClickListener(new NaverMap.OnMapClickListener() {
-            @Override
-            //지도 클릭 이벤트 리스너 정의
-            public void onMapClick(@NonNull PointF pointF, @NonNull LatLng latLng) {
-                SetMarkerPosition(latLng);
-                SetInfoWindow();
-                marker.setMap(naverMap);
-                infoWindow.open(marker);
-
-                LL = (LinearLayout)findViewById(R.id.LinearMarkerButton);
-
-//                if(LL.getVisibility()==LL.VISIBLE){
-//                    LL.setVisibility(LL.INVISIBLE);
-//                }
-            }
-        });
-    }
-
-    //buttonAddMarker 버튼 (마커 추가버튼) 리스너 정의
-    public void SetButtonAddMarkerListener(){
-        buttonAddMarker = (Button)findViewById(R.id.buttonAddMarker);
-        buttonAddMarker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                marker=new Marker(marker.getPosition()); //클릭 시 앞서 받은 포지션에 마커를 추가
-                Log.i("Test",lat+","+lng); //확인을 위한 로그표시
-
-                PopupMenu p=new PopupMenu(getApplicationContext(),v);
-                getMenuInflater().inflate(R.menu.marker_menu,p.getMenu());
-                p.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        Toast.makeText(getApplicationContext(),"팝업버튼",Toast.LENGTH_LONG).show();
-                        return false;
-                    }
-                });
-                p.show();
-
-            }
-        });
-    }
-
-    //마커 클릭 리스너 정의  (추가할거 많음) 미완
-    public void SetMarkerOnClickListener(){
-        marker.setOnClickListener(new Overlay.OnClickListener() {
-            @Override
-            public boolean onClick(@NonNull Overlay overlay) { // 버튼클릭하여 저장된 마커의 클릭리스너
-                // 마커 클릭 시 메뉴 팝업
-                Log.i("test","MakerClick");
-                Toast.makeText(getApplicationContext(),"클릭되었습니다!!",Toast.LENGTH_LONG).show();
-
-
-                LL = (LinearLayout)findViewById(R.id.LinearMarkerButton);
-                if(LL.getVisibility()==LL.VISIBLE){
-                    LL.setVisibility(LL.INVISIBLE);
-                }
-                else{
-                    LL.setVisibility(LL.VISIBLE);
-                }
-                return false;
-            }
-        });
-
-
-    }
 }
