@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/LinearMarkerButton"
-    android:layout_width="50dp"
+    android:layout_width="100dp"
     android:layout_height="450dp"
     android:layout_gravity="right|center_vertical"
     android:orientation="vertical"
@@ -12,23 +12,26 @@
     tools:visibility="visible">
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/write_button"
+        android:fontFamily="@font/cookierunblack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="WIRTE" />
+
+    <Button
+        android:id="@+id/update_button"
+        android:fontFamily="@font/cookierunblack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="Button" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/Delete_button"
+        android:fontFamily="@font/cookierunblack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Button" />
-
-    <Button
-        android:id="@+id/button3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Button" />
+        android:text="delete" />
 </LinearLayout>

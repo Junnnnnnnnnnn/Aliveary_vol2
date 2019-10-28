@@ -1,5 +1,6 @@
 package com.example.navermappractice;
 
+import android.content.Intent;
 import android.graphics.PointF;
 import android.graphics.drawable.shapes.Shape;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -37,18 +39,23 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     MainButtonFragment mainButtonFragment; //네이버지도에서 동작하는 버튼의 프래그먼트 객체
     MarkerButtonFragment MBF;
     MenuFragment MF;
+    WriteFragment WF;
 
 
 
 
     //사용한 버튼
     Button buttonAddMarker; //누른 위치에 마커를 추가하는 버튼
+    Button buttonCreateWrite;
+    Button buttonSaveText;
     Button menuButton;
+
     LinearLayout LL;
+    TextView TextUser;
 
     //마커관련
-    Marker marker = new Marker(); //마커객체
-    InfoWindow infoWindow= new InfoWindow(); //마커 클릭 시 표시되는 알림창
+    Marker marker; //마커객체
+    InfoWindow infoWindow; //마커 클릭 시 표시되는 알림창
 
     //좌표변수
     String lat;
@@ -56,6 +63,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     NaverMap NM;
 
+    public MainActivity(){
+        marker = new Marker();
+        infoWindow = new InfoWindow();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +76,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         InitNaverMap(savedInstanceState); //기초 화면이 되는 naverMap(프래그먼트)에 네이버지도를 넣음
 
         addFragment(mainButtonFragment.newinstance()); //mainButtonFragment를 지도 위에 덮어써줌
+        addFragment(MBF.newInstance());
         addFragment(MF.newInstance());
+
 
     }
 //=============================================================================================
@@ -81,17 +94,52 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
         mapFragment.getMapAsync(this);
     }
+
     //사용하진 않았지만 프래그먼트를 교체해주는 것 (추가해주는 것과 다름)
     private void replaceFragment(Fragment fragment){
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.map_fragment, fragment).commit();
+        fragmentTransaction.replace(R.id.map_fragment, fragment);
+        fragmentTransaction.commit();
     }
     // 프래그먼트 객체를 추가로 덮어써줌
     private void addFragment(Fragment fragment){
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.map_fragment, fragment).commit();
+        fragmentTransaction.add(R.id.map_fragment, fragment);
+        fragmentTransaction.commit();
+
+    }
+    private void removeFragment(Fragment fragment){
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.remove(fragment);
+        fragmentTransaction.commit();
+    }
+    // 교체 할시 교체 되기전 Fragment를 BackStack에 저장
+    private void backStackOfReplaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.map_fragment, fragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+    // Add 할시 Add 되기전 Fragment를 BackStack에 저장
+    private void backStackOfAddFragment(Fragment fragment){
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.add(R.id.map_fragment, fragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+
+    }
+    // 제거 할시 제거 되기전 Fragment를 BackStack에 저장
+    private void backStackOfRemoveFragment(Fragment fragment){
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.remove(fragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
 
 //============================================================================================
@@ -104,7 +152,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         SetButtonAddMarkerListener();
 
         SetButtonMenuListener();
-
 
         SetMarkerButtonListener();
     }
@@ -124,6 +171,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                         switch (item.getItemId()){
                             case R.id.item1:
                                 Toast.makeText(getApplication(),"메뉴1",Toast.LENGTH_SHORT).show();
+// ===================================================================================================
+//                                Intent intent = new Intent(MainActivity.this,MainActivity.class);
+//                                startActivity(intent);
+//                                finish();
+// ===================================================================================================
                                 break;
                             case R.id.item2:
                                 Toast.makeText(getApplication(),"메뉴2",Toast.LENGTH_SHORT).show();
@@ -137,9 +189,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                         return false;
                     }
                 });
-
-
-                출처: https://survivalking.tistory.com/25 [생존몬의 프로그래밍 블로그]
                 popup.show();
             }
         });
@@ -158,7 +207,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 marker.setMap(naverMap);
 
 
-                LL = (LinearLayout)findViewById(R.id.LinearMarkerButton);
             }
         });
     }
@@ -188,15 +236,19 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         marker.setOnClickListener(new Overlay.OnClickListener() {
             @Override
             public boolean onClick(@NonNull Overlay overlay) { // 버튼클릭하여 저장된 마커의 클릭리스너
-                Log.i("test","MakerClick");
-                Toast.makeText(getApplicationContext(),"클릭되었습니다!!",Toast.LENGTH_LONG).show();
+
+               // Toast.makeText(getApplicationContext(),"클릭되었습니다!!",Toast.LENGTH_LONG).show();
+
 
                 LL = (LinearLayout)findViewById(R.id.LinearMarkerButton);
+
+
                 if(LL.getVisibility()==LL.VISIBLE){
                     LL.setVisibility(LL.INVISIBLE);
                 }
                 else{
                     LL.setVisibility(LL.VISIBLE);
+                    SetWriteButtonListener();
                 }
 
                 return true;
@@ -232,5 +284,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         marker.setPosition(new LatLng(dLat, dLng));
     }
-
+    //글쓰기 버튼 클릭 리스너 정의
+    public void SetWriteButtonListener() {
+        buttonCreateWrite = (Button) findViewById(R.id.write_button);
+        buttonCreateWrite.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                backStackOfAddFragment(WF.newInstance());
+                Toast.makeText(getApplicationContext(), "클릭되었습니다!!", Toast.LENGTH_LONG).show();
+                //SetSaveTextButtonListener();
+                LL.setVisibility(LL.INVISIBLE);
+            }
+        });
+    }
 }

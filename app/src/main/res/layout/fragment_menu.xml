@@ -9,5 +9,6 @@
         android:id="@+id/menu"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:fontFamily="@font/cookierunbold"
         android:text="메뉴" />
 </FrameLayout>
